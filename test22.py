@@ -1,4 +1,7 @@
 import random
+import time
+start_time = time.time()
+
 N=0 
 K=0 
 T=0 
@@ -68,15 +71,16 @@ def fitness(chromosom):
     slotslist=[] #contains all possible slots of halls
     courcesList=[] # saves all cources in the chromosoms
     fitnessVal=0 
-   
     for i in range(N):
-        courcesList.append(cources[i][0])
-    # checking if all cources are not in chromosom
-
+        courcesList.append(chromosom[i][0])
+    
     for i in range(N):
-        if chromosom[i][0] not in courcesList:
-            return 10000
+        if cources[i] not in courcesList:
+            return 4321 #chromosom have reperting cource
 
+    if len(chromosom)!=N:
+        return 1234 # shows that chromosome is missing a cource 
+    
     #checking for clashes of slots (2 cources have same time and same location )
     for i in range(N):
      val=str(chromosom[i][1]) + str(chromosom[i][2])
@@ -127,7 +131,6 @@ def crossover(population):
         population.append(child2)
     return population
 
-
 #---MUTATION FUNCTION------
 def mutation(population):
     for i in range(0,PopultaionSize-1):
@@ -143,7 +146,6 @@ def mutation(population):
 
 def takeFitness(elem): #used in sorting
     return elem[1]
-
 
 #----EVALUATING POPULATION-----
 def evaluate(population,length): # returns the best chromosoms from population 
@@ -171,7 +173,6 @@ def nextGen():
        Pop.insert(0,mutationPop[i])
   return Pop
 
-
 def main():
     global population,index_fitness
     genPopulation()
@@ -185,14 +186,18 @@ def main():
         print("---Generation---%d"%i)
         for j in range(PopultaionSize):
             index_fitness.append([j,fitness(nextgen[j])])
-        print("Best Solution of this generation: \n"+str(nextgen[index_fitness[0][0]]))
-        index_fitness.sort(key=takeFitness, reverse=True)
+        print("Best Solution of this generation: \n"+str(nextgen[index_fitness[0][0]])+"With fitness"+str(index_fitness[0][1]))
+        index_fitness.sort(key=takeFitness)
         population=nextgen
     print("\n************ FINAL ****************")
     print("------SOLUTION---------")
-    print(population[index_fitness[0][0]])
-    print("------FITNESS----------")
-    print(index_fitness[0][1])
+    for i in population[index_fitness[0][0]]:
+        print("-> Place Cource: "+str(i[0])+" in Hall# "+i[2]+" at time slot "+i[1])
+
+    print("--------FITNESS----------")
+    print("\t"+str(index_fitness[0][1]))
     print("*************************")
- 
+    
 main()
+
+print("---Running Time: %s seconds ---" % (time.time() - start_time))
