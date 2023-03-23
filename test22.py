@@ -5,34 +5,41 @@ start_time = time.time()
 N=0 
 K=0 
 T=0 
-examDuration= 3  #exam time and slot time are same thus no extra time for halls
+slotDuration= 0  
 PopultaionSize=100 
 cources=[]  
+cources_duration=[] 
 halls=[]
 timeSlots=[]
 population=[]
 commonStu=[]
+
 index_fitness=[] #list that contains indexs and fitness values of population 
 
 #-----INPUT-------
-N=int(input("Enter the number of cources (N): "))
+N=int(input(">Enter the number of cources (N): "))
 
-K=int(input("Enter the number of exam halls (K): "))
-
-T=int(input("Enter the max number of slots for all halls (each exam is 3 hours): "))
 for i in range(N):
-    cources.append(input("Enter name of cource #"+str((i+1))+": "))
+    cources.append(input(">>Enter name of cource #"+str((i+1))+": "))
+    cources_duration.append(input(">>>Enter duration for this cource exam (hours): "))
+
+K=int(input("\n>Enter the number of exam halls (K): "))
+
+T=int(input(">>Enter the number of slots avaliable in each hall: "))
+ 
+slotDuration= int(input(">>>Enter the duration of one timeslot (hours): "))
+print("\n")
 for i in range(K):
     halls.append(str(i))
 for i in range(T):
     timeSlots.append(str(i))
 for i in  range(N):
     for j in range(i+1, N):
-        commonStu.append((cources[i], cources[j], int(input("Enter the number of common students in "+cources[i]+" and "+cources[j]+": "))))
+        commonStu.append((cources[i], cources[j], int(input(">Enter the number of common students in "+cources[i]+" and "+cources[j]+": "))))
 if K*T<N:
-    print("----------------------------------------------------------") 
-    print("Best solution not possible as slots are less then cources ")
-    print("----------------------------------------------------------") 
+    print("---------------------------------------------------------------") 
+    print("|  Best solution not possible as slots are less then cources  |")
+    print("---------------------------------------------------------------") 
 #------GENERATING RANDOM POPULATION------
 def genPopulation():
     for i in range(PopultaionSize):
@@ -65,6 +72,11 @@ def getStudentClashesCount(courceslist): #returns the count of students with cla
         elif commonStu[i][0]==courceslist[1] and commonStu[i][1]==courceslist[0]:
             return commonStu[i][2]
     return 0
+def getCourceTime(cource):
+    for i in range(len(cources)):
+        if cources[i]==cource:
+            return cources_duration[i]
+    return -1
 
 #-----FITNESS FUNCTION-----------
 def fitness(chromosom):
@@ -90,11 +102,16 @@ def fitness(chromosom):
          return 1000  # checking no 2 cources have same time and same hall  
     
     #checking for hours 
-    for i in range(N):
-        for j in range(N):
-            if i!=j and chromosom[i]==cources[j]: 
-                if int(chromosom[i][1])+examDuration>T*3: # checking if the cource exceeds the max time of hall 
-                    fitnessVal+=(10*((int(chromosom[i][1])+examDuration)-T*3)) # for every hour exceeding max time, 10 points are added
+
+    # for i in range(N):
+    #     for j in range(N):
+    #         if i!=j and chromosom[i]==cources[j]: 
+    #             if int(chromosom[i][1])+examDuration>T*3: # checking if the cource exceeds the max time of hall 
+    #                 fitnessVal+=(10*((int(chromosom[i][1])+examDuration)-T*3)) # for every hour exceeding max time, 10 points are added
+    for i in chromosom:
+       endingTime= int(getCourceTime(i[0]))
+       if endingTime>slotDuration:
+           fitnessVal+= 10*(endingTime-slotDuration)
 
     #checking for clashes students 
     times=[chromosom[0][1]]
