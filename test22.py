@@ -37,9 +37,10 @@ for i in  range(N):
     for j in range(i+1, N):
         commonStu.append((cources[i], cources[j], int(input(">Enter the number of common students in "+cources[i]+" and "+cources[j]+": "))))
 if K*T<N:
-    print("---------------------------------------------------------------") 
-    print("|  Best solution not possible as slots are less then cources  |")
-    print("---------------------------------------------------------------") 
+    print("----------------------------------------------------------") 
+    print("|  Solution not possible as slots are less then cources  |")
+    print("----------------------------------------------------------") 
+    exit()
 #------GENERATING RANDOM POPULATION------
 def genPopulation():
     for i in range(PopultaionSize):
@@ -101,13 +102,6 @@ def fitness(chromosom):
      else:
          return 1000  # checking no 2 cources have same time and same hall  
     
-    #checking for hours 
-
-    # for i in range(N):
-    #     for j in range(N):
-    #         if i!=j and chromosom[i]==cources[j]: 
-    #             if int(chromosom[i][1])+examDuration>T*3: # checking if the cource exceeds the max time of hall 
-    #                 fitnessVal+=(10*((int(chromosom[i][1])+examDuration)-T*3)) # for every hour exceeding max time, 10 points are added
     for i in chromosom:
        endingTime= int(getCourceTime(i[0]))
        if endingTime>slotDuration:
@@ -129,7 +123,7 @@ def fitness(chromosom):
 #-----CROSSOVER FUNCTION------
 def crossover(population):
     cutPoint=N/2
-    for i in range(PopultaionSize-1):
+    for i in range(0,len(population)-1,8):
         parent1=population[i]
         parent2=population[i+1]
         child1=[]
@@ -150,7 +144,7 @@ def crossover(population):
 
 #---MUTATION FUNCTION------
 def mutation(population):
-    for i in range(0,PopultaionSize-1):
+    for i in range(0,len(population)-1,4):
         index=random.randint(0, N-1)
         chromosom1=population[i][:]
         chromosom2=population[i+1][:]
@@ -200,16 +194,16 @@ def main():
     for i in range(100): 
         nextgen=nextGen()
         index_fitness=[]
-        print("---Generation---%d"%i)
         for j in range(PopultaionSize):
             index_fitness.append([j,fitness(nextgen[j])])
-        print("Best Solution of this generation: \n"+str(nextgen[index_fitness[0][0]])+"With fitness"+str(index_fitness[0][1]))
+        # print("Best Solution of this generation: \n"+str(nextgen[index_fitness[0][0]])+"With fitness"+str(index_fitness[0][1]))
         index_fitness.sort(key=takeFitness)
         population=nextgen
+    print("Total Generations: 100")
     print("\n************ FINAL ****************")
     print("------SOLUTION---------")
-    for i in population[index_fitness[0][0]]:
-        print("-> Place Cource: "+str(i[0])+" in Hall# "+i[2]+" at time slot "+i[1])
+    for i in population[index_fitness[0][0]]:   
+        print(f"-> Place Cource: {(i[0])} in Hall#{1+int(i[2])} at timeslot {1+int(i[1])}")
 
     print("--------FITNESS----------")
     print("\t"+str(index_fitness[0][1]))
