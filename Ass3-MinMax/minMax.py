@@ -1,28 +1,15 @@
 import chess
-
+# BY HARRIS AAMIR 20I0943 SE-S
 # Define the point values of the pieces
 piece_values = {
-    chess.PAWN: 1,
-    chess.KNIGHT: 3,
-    chess.BISHOP: 3,
-    chess.ROOK: 5,
-    chess.QUEEN: 9,
-    chess.KING: 0
+    chess.PAWN: 5,
+    chess.KNIGHT: 15,
+    chess.BISHOP: 15,
+    chess.ROOK: 25,
+    chess.QUEEN: 50,
+    chess.KING: 1
 }
-
-
-print("================================")
-print("\t8  ♜  ♞  ♝  ♛  ♚  ♝  ♞  ♜")
-print("\t7  ♟  ♟  ♟  ♟  ♟  ♟  ♟  ♟")
-print("\t6  ·  ·  ·  ·  ·  ·  ·  · ")
-print("\t5  ·  ·  ·  ·  ·  ·  ·  · ")
-print("\t4  ·  ·  ·  ·  ·  ·  ·  · ")
-print("\t3  ·  ·  ·  ·  ·  ·  ·  · ")
-print("\t2  ♙  ♙  ♙  ♙  ♙  ♙  ♙  ♙")
-print("\t1  ♖  ♘  ♗  ♕  ♔  ♗  ♘  ♖")
-print("\t   a  b  c  d  e  f  g  h")
-print("=================================")
-
+#evaluating board on current pieces
 def evaluate_board(board):
     score = 0
     for square in chess.SQUARES:
@@ -34,59 +21,105 @@ def evaluate_board(board):
             else:
                 score -= val
     return score
+#printing board with labels and symbols
+def printBoard(b):
+    strBoard=str(b)
+    strBoard=strBoard.replace("p", "♙")
+    strBoard=strBoard.replace("r", "♖")
+    strBoard=strBoard.replace("n", "♘")
+    strBoard=strBoard.replace("b", "♗")
+    strBoard=strBoard.replace("q", "♕")
+    strBoard=strBoard.replace("k", "♔")
+    strBoard=strBoard.replace("P", "♟")
+    strBoard=strBoard.replace("R", "♜")
+    strBoard=strBoard.replace("N", "♞")
+    strBoard=strBoard.replace("B", "♝")
+    strBoard=strBoard.replace("Q", "♛")
+    strBoard=strBoard.replace("K", "♚")
+    print("=====================")
+    for i in range(127):
+      if i%16==0:
+        print(f"{8-int(i/16)}  ",end="")
+      print(strBoard[i],end="")
+    print("\n   a b c d e f g h")
+    print("=====================")
 
-def minimax(board, depth, alpha, beta, maximizing_player):
+#prunning occurs when beta<alpha
+def checkPruning(beta,alpha):
+    if beta <= alpha:
+        return True
+    else: return False 
+#minMax algorithm
+def minMax(board, depth, alpha, beta, player):
     if depth == 0 or board.is_game_over():
         return evaluate_board(board)
 
-    if maximizing_player:
-        max_score = -float("inf")
+    if player=="maximizingPlayer":
+        maxScore = -1000000
         for move in board.legal_moves:
             board.push(move)
-            score = minimax(board, depth - 1, alpha, beta, False)
+            score = minMax(board, depth - 1, alpha, beta, "minimizingPlayer")
             board.pop()
-            max_score = max(max_score, score)
+            maxScore = max(maxScore, score)
             alpha = max(alpha, score)
-            if beta <= alpha:
+            if checkPruning(beta,alpha):
                 break
-        return max_score
+        return maxScore
     else:
-        min_score = float("inf")
+        minScore = 1000000 #represents pos infinty 
         for move in board.legal_moves:
             board.push(move)
-            score = minimax(board, depth - 1, alpha, beta, True)
+            score = minMax(board, depth - 1, alpha, beta, "maximizingPlayer")
             board.pop()
-            min_score = min(min_score, score)
+            minScore = min(minScore, score)
             beta = min(beta, score)
-            if beta <= alpha:
+            if checkPruning(beta,alpha):
                 break
-        return min_score
-
-def get_ai_move(board):
-    best_score = -float("inf")
-    best_move = None
+        return minScore
+aiMoves=[]
+#generate and check moves for AI
+def moveByAI(board):
+    bestScore = -1000000 #represents neg infinty 
+    bestMove = None 
+    # compare every legal move 
     for move in board.legal_moves:
+        if move in aiMoves: continue
         board.push(move)
-        score = minimax(board, 2, -float("inf"), float("inf"), False)
+        score = minMax(board, 4, -1000000, 1000000, "minimizingPlayer")
         board.pop()
-        if score > best_score:
-            best_score = score
-            best_move = move
-    return best_move
+        if score > bestScore:
+            bestScore = score
+            bestMove = move
+    return bestMove
 
 board = chess.Board()
-
+# main game while loop 
 while not board.is_game_over():
-    print(board)
-    if board.turn == chess.WHITE:
+    printBoard(board)
+    if board.turn == chess.WHITE:  #player turn 
         try:
-            move_str = input("Enter a move in coordinate notation (e.g. 'b1c3'): ")
-            move = chess.Move.from_uci(move_str)
-            board.push(move)
+            moveInput = input("Enter a move in coordinate notation (e.g. 'b1c3'): ")
+            userMove = chess.Move.from_uci(moveInput)
+            if chess.Move.from_uci(moveInput) in board.legal_moves:
+             board.push_uci(moveInput)
+            else:
+              print("Illegal move. Try again.")
         except ValueError:
-          print("Invalid move, try again.")
-    else:
-        ai_move = get_ai_move(board)
-        board.push(ai_move)
-        print("AI move:", ai_move)
+          print("Invalid move notaion, try again.")
+    else:   #ai turn 
+        aiMove = moveByAI(board)
+        board.push(aiMove)
+        aiMoves.append(aiMove)
+        print("Best move selected by PC:", aiMove)
+    if board.is_checkmate():
+        print("Checkmate! Game over.")
+        break
     print("--------------------------")
+#check for winner 
+printBoard(board)
+if board.result() == "1-0":
+    print("White wins!")
+elif board.result() == "0-1":
+    print("Black wins!")
+else:
+    print("Draw!")
